@@ -1,0 +1,1326 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>DC-83</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+
+/* =========================================================
+   ROOT VARIABLES
+   ========================================================= */
+:root {
+  /* Page layout */
+  --page-width: 95%;
+  --page-max: 1600px;
+  --content-gap: 20px;
+
+  /* Form layout */
+  --label-col-md: 240px;
+  --label-col-lg: 260px;
+
+  /* Visuals */
+  --border: #cfd8e3;
+  --muted: #6b7280;
+  --accent: #0b5bd3;
+  --label-bg: #f2f4f7;
+
+  /* Pyramid */
+  --side-step: 6%;
+  --row-gap: 3px;
+  --pad-v: 3px;
+  --pad-h: 12px;
+}
+
+/* =========================================================
+   BASE STYLES
+   ========================================================= */
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", Arial;
+  color: #111827;
+  background: #ffffff;
+}
+
+.page {
+  width: var(--page-width);
+  max-width: var(--page-max);
+  margin: 0 auto;
+}
+
+/* =========================================================
+   STICKY ACTION BAR
+   ========================================================= */
+.actions {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  gap: .4rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  padding: .4rem 0;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+}
+
+button {
+  padding: .4rem .65rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font: inherit;
+  line-height: 1.1;
+}
+
+button.primary { background: #0b5bd3; color: #fff; border-color: #0b5bd3; }
+button.danger { color: #b42318; border-color: #ef9ca0; }
+button:disabled { opacity: .55; cursor: not-allowed; }
+
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
+header.page-header {
+  text-align: center;
+  padding: 10px 0 6px 0;
+}
+
+header.page-header h1 {
+  margin: 0 0 4px 0;
+  font-size: clamp(1.2rem, 2.2vw, 1.8rem);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+header.page-header p {
+  margin: 0;
+  color: #374151;
+  line-height: 1.25;
+  font-size: clamp(0.9rem, 1.25vw, 1rem);
+}
+
+main { padding: 8px 0 18px; }
+
+/* =========================================================
+   TWO-COLUMN LAYOUT (General Info + Pyramid)
+   ========================================================= */
+.content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--content-gap);
+  align-items: start;
+  margin: 8px 0 6px;
+}
+
+/* Large screens: split columns */
+@media (min-width: 900px) {
+  .content {
+    grid-template-columns: 2fr 1fr;
+  }
+  .pyramid-wrap {
+    justify-content: flex-end;
+  }
+}
+
+/* Mobile: center pyramid */
+@media (max-width: 899.98px) {
+  .pyramid-wrap {
+    justify-content: center;
+  }
+}
+
+/* Mobile ordering */
+.content .haz { order: 1; }
+.content .gi  { order: 2; }
+
+@media (min-width: 900px) {
+  .content .haz { order: 0; }
+  .content .gi  { order: 0; }
+}
+
+/* Add spacing where section titles used to be */
+.content > div,
+.approvals-grid,
+.jha-title {
+  margin-top: 18px;
+}
+
+/* =========================================================
+   GENERAL INFORMATION FORM
+   ========================================================= */
+.grid-form { display: grid; gap: 8px; }
+
+.row {
+  display: grid;
+  gap: .4rem .8rem;
+  align-items: center;
+  grid-template-columns: 1fr;
+}
+
+.label-box {
+  background: var(--label-bg);
+  font-weight: 800;
+  padding: .35rem .5rem;
+  border-radius: 0px;
+  text-align: left;
+}
+
+.row input[type="text"] {
+  width: 100%;
+  padding: .4rem .5rem;
+  border: 1px solid var(--border);
+  border-radius: 0px;
+  font: inherit;
+  min-height: 2rem;
+  box-sizing: border-box;
+}
+
+/* Wider screens: larger label column */
+@media (min-width: 640px)  { .row { grid-template-columns: var(--label-col-md) 1fr; } }
+@media (min-width: 1200px) { .row { grid-template-columns: var(--label-col-lg) 1fr; } }
+
+/* =========================================================
+   PYRAMID (Hierarchy of Controls)
+   ========================================================= */
+.pyramid-wrap { width: 100%; display: flex; }
+.pyramid { width: 100%; max-width: 640px; }
+
+.slice + .slice { margin-top: var(--row-gap); }
+
+.slice {
+  --p: 0.8;
+  background: rgba(0,0,0,var(--p));
+  color: #fff;
+  padding: var(--pad-v) var(--pad-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 4px;
+  outline: 1px solid rgba(255,255,255,.18);
+}
+
+.slice span {
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Pyramid tapering */
+.s1 { --p:.80; clip-path: polygon(0% 0%,100% 0%,calc(100% - var(--side-step)) 100%,var(--side-step) 100%); }
+.s2 { --p:.70; clip-path: polygon(var(--side-step) 0%,calc(100% - var(--side-step)) 0%,calc(100% - 2*var(--side-step)) 100%,calc(2*var(--side-step)) 100%); }
+.s3 { --p:.60; clip-path: polygon(calc(2*var(--side-step)) 0%,calc(100% - 2*var(--side-step)) 0%,calc(100% - 3*var(--side-step)) 100%,calc(3*var(--side-step)) 100%); }
+.s4 { --p:.50; clip-path: polygon(calc(3*var(--side-step)) 0%,calc(100% - 3*var(--side-step)) 0%,calc(100% - 4*var(--side-step)) 100%,calc(4*var(--side-step)) 100%); }
+.s5 { --p:.40; clip-path: polygon(calc(4*var(--side-step)) 0%,calc(100% - 4*var(--side-step)) 0%,calc(100% - 5*var(--side-step)) 100%,calc(5*var(--side-step)) 100%); }
+
+/* =========================================================
+   JHA TABLE (Mobile-Friendly + Print-Friendly)
+   ========================================================= */
+.jha-title { margin: 12px 0 4px; }
+
+.jha-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  border: 1px solid var(--border);
+}
+
+.jha-table thead th {
+  background: var(--label-bg);
+  font-weight: 800;
+  text-align: center;
+  border: 1px solid var(--border);
+  padding: .4rem;
+}
+
+.jha-table tbody td {
+  border: 1px solid var(--border);
+  vertical-align: top;
+  position: relative;
+  padding: 0;
+}
+
+.jha-table textarea {
+  width: 100%;
+  min-height: 90px;
+  resize: vertical;
+  border: 0;
+  padding: .5rem;
+  font: inherit;
+  box-sizing: border-box;
+  line-height: 1.25;
+}
+
+/* Mobile layout for table */
+@media (max-width: 700px) {
+  .jha-table thead { display: none; }
+  .jha-table, .jha-table tbody, .jha-table tr, .jha-table td { display: block; width: 100%; }
+
+  .jha-table {
+    border: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    border-collapse: separate; /* avoids any collapsed border artifacts */
+  }
+
+  /* Each row becomes a “card” with a header badge and more spacing */
+  .jha-table tr {
+    margin: 16px 0 22px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #f8fafc;
+    overflow: hidden; /* keep the header strip corners rounded */
+    box-shadow: 0 1px 2px rgba(16,24,40,.06);
+  }
+
+  /* Row header strip: “STEP N” */
+  .jha-table tr::before {
+    content: "" attr(data-step);
+    display: block;
+    background: #e7eef8;           /* subtle accent band */
+    color: #0b5bd3;                 /* tie-in with your --accent */
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: .3px;
+    padding: .4rem .6rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Remove hard cell borders; add inner spacing */
+  .jha-table td {
+    border: 0 !important;
+    padding: .55rem .65rem .7rem .65rem;
+  }
+
+  /* Subtle separation between the 3 cells within a card */
+  .jha-table td + td {
+    border-top: 1px dashed var(--border) !important;
+  }
+
+  /* Labels above each cell (cleaner without the index since STEP badge shows it) */
+  .jha-table td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: .25rem;
+    font-weight: 700;
+    color: #374151;
+  }
+
+  /* Slightly taller textareas for thumb typing */
+  .jha-table textarea {
+    min-height: 120px;
+  }
+}
+
+/* =========================================================
+   APPROVALS PANEL
+   ========================================================= */
+.approvals-grid { margin-top: 4px; }
+
+.approvals-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 900px) {
+  .approvals-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.appr-card {
+  padding: .5rem .6rem;
+  background: #fff;
+  display: grid;
+  padding: .2rem .3rem !important;
+  min-height: 0 !important;
+}
+
+.appr-title {
+  background: var(--label-bg);
+  border-radius: 0px;
+  padding: .3rem .45rem;
+  display: grid;
+  grid-auto-flow: row;
+  gap: .15rem; /* space between label and signature/button row */
+  line-height: 1.2;               /* compact label height */
+}
+
+/* First line: bold caption */
+.appr-caption {
+  font-weight: 800;
+  font-size: 0.85rem;             /* slightly smaller label */
+}
+
+/* Second line: holds button + signature text */
+.appr-row {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  flex-wrap: nowrap;              /* prevents weird wrapping */
+  min-height: 1rem;               /* reduces box height */
+}
+
+/* Signature display styling inside the gray box */
+.sig-display {
+  border: none !important;
+  background: transparent;      /* inherit gray bg visually */
+  padding: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  color: #334155;
+  font-size: 0.80rem;             /* compact readable monospace */
+  line-height: 1.2;               /* tighter signature text */
+}
+
+
+/* When unsigned, keep a consistent line height */
+.appr-row:empty::after,
+.appr-row .sig-display.hidden + *::after {
+  content: "";
+}
+
+.appr-body {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.sig-display {
+  border: none !important;
+  background: transparent;
+  padding: .15rem 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  color: #334155;
+}
+
+.hidden { display: none !important; }
+
+/* =========================================================
+   LOCKED STATE — SCREEN ONLY (visual cue when form is signed)
+   ========================================================= */
+:root { --locked-bg: #eef2f7; } /* subtle tint; tweak as needed */
+
+@media screen {
+  /* Text inputs in General Information */
+  .grid-form .row input.locked,
+  .grid-form .row input[readonly] {
+    background: var(--locked-bg);
+  }
+
+  /* Textareas in the JHA table */
+  .jha-table textarea.locked,
+  .jha-table textarea[readonly] {
+    background: var(--locked-bg);
+  }
+
+  /* Any other textual controls you lock */
+  textarea.locked,
+  input.locked,
+  textarea[readonly],
+  input[readonly],
+  input:disabled {
+    background: var(--locked-bg);
+  }
+}
+
+/* =========================================================
+   DC‑83 TRANSLATOR PANEL
+   ========================================================= */
+
+details#translatorPanel {
+  margin-top: 16px;
+  padding-top: .4rem;
+  text-align: center;                        /* center children like the summary */
+}
+
+details#translatorPanel summary.dc83-summary {
+  list-style: none;
+  cursor: default;                           /* normal arrow */
+  color: #374151;
+  font-weight: 500;
+  display: inline-block;                     /* let it center naturally */
+  margin: 0 auto;                            /* horizontal centering */
+  padding: 4px 0 8px;                        /* top/bottom cushion */
+  /* no width:100% here — keeps it neat and prevents odd panel wrapping */
+}
+
+details#translatorPanel summary.dc83-summary::-webkit-details-marker { display: none; }
+
+#translatorBody {
+  margin-top: 12px;
+  text-align: left;                          /* restore normal left alignment */
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: .4rem .8rem;
+  padding: 8px 12px;
+}
+
+@media (min-width: 700px) {
+  #translatorBody {
+    grid-template-columns: 1fr 2fr;
+  }
+}
+
+#translatorBody .key {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  color: var(--muted);
+  text-align: right; 
+}
+
+#translatorBody input,
+#translatorBody textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#translatorBody textarea {
+  min-height: 56px;
+}
+
+.panel-toolbar {
+  display: flex;
+  gap: .5rem;
+  margin-top: .4rem;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  justify-content: center; /* ← horizontally center content */
+}
+
+/* =========================================================
+   PRINT — CLEAN CONSOLIDATED BLOCK
+   ========================================================= */
+@media print {
+
+  @page {
+    size: letter landscape;
+    margin: 0.25in;
+  }
+  
+  textarea {
+    resize: none !important;
+    overflow: hidden !important;
+  }
+
+  /* Show + position the print footer on every page */
+  
+  summary.dc83-summary {
+    display: none !important;
+  }
+
+  .print-footer {
+    display: block !important;
+    position: fixed;
+    left: 0.0in;              /* align with @page margins */
+    right: 0.0in;
+    bottom: 0.0in;            /* sits just above the page edge */
+    text-align: left;          /* or center/right if you prefer */
+    font-size: 8pt;
+    color: #111827;
+    z-index: 9999;             /* ensure it sits above content */
+  }
+  
+  .approvals-cards {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 12px !important;
+  }
+
+
+/* General Information row controls */
+
+  /* Make the two cells in each row match heights */
+  .row { 
+    align-items: stretch !important; 
+  }
+
+  /* General Information row controls */
+  .row input[type="text"] {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+
+    /* OVERRIDE THE GLOBAL MIN-HEIGHT */
+    min-height: 0 !important;
+
+    /* Exact one-line sizing */
+    height: 1.4rem !important;
+    line-height: 1.4rem !important;
+    font-size: 11px !important;
+
+    /* Box model + visuals */
+    padding: 0 4px !important;
+    border: 1px solid #aeb7c4 !important;
+    box-sizing: border-box !important;
+    background: #ffffff !important; /* keep white in print */
+  }
+
+  .row .label-box {
+    display: flex !important;
+    align-items: center !important;
+    padding: 0 !important;
+
+    /* Match input height */
+    min-height: 1.4rem !important;
+  }
+
+  header.page-header {
+    padding: 8px 0 4px;
+  }
+
+  .content {
+    gap: 16px;
+  }
+
+  /* Preserve color accuracy */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .slice {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Compact labels */
+  .label-box {
+    padding-top: 0.15rem !important;
+    padding-bottom: 0.15rem !important;
+  }
+
+  /* Table header spacing */
+  .jha-table thead th {
+    padding-top: 0.2rem !important;
+    padding-bottom: 0.2rem !important;
+  }
+
+  /* Textarea spacing */
+  .jha-table textarea {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+    min-height: 70px;
+  }
+
+  /* Print-friendly table borders */
+  .jha-table,
+  .jha-table th,
+  .jha-table td {
+    border-color: #aeb7c4;
+  }
+
+  /* Hide translator panel UI */
+  #translatorPanel .panel-toolbar {
+    display: none !important;
+  }
+
+  /* Hide sticky UI */
+  .actions {
+    display: none !important;
+  }
+
+  /* Hide approval UI */ 
+  .approvals-grid button {
+    display: none !important;
+  }
+ 
+}
+
+</style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- ===== Sticky Actions ===== -->
+    <div class="actions">
+      <button type="button" id="copyUrlBtn" class="primary" data-i18n-key="btn.copyUrl">Copy URL</button>
+      <button type="button" id="shareUrlBtn" data-i18n-key="btn.shareUrl">Share URL</button>
+      <button type="button" id="editFormBtn" data-i18n-key="btn.editForm">Edit form</button>
+      <button type="button" id="exportPdfBtn" data-i18n-key="btn.exportPdf">Export to PDF</button>
+      <button type="button" id="resetBtn" class="danger" data-i18n-key="btn.reset">Reset</button>
+      <button type="button" id="resetApprovalsBtn" class="danger" data-i18n-key="btn.resetApprovals">Reset approvals</button>
+      <button type="button" id="addRowBtn" data-i18n-key="btn.addRow">+ Row</button>
+      <button type="button" id="removeRowBtn" data-i18n-key="btn.removeRow">− Row</button>
+    </div>
+
+    <!-- ===== Header ===== -->
+    <header class="page-header" id="PageHeader">
+      <h1 data-i18n-key="header.title" data-i18n-prop="text">Job Hazard Analysis</h1>
+      <p data-i18n-key="header.subtitle" data-i18n-prop="html">(<em>Job Hazard Analysis Instructions</em> (DC-83i) must be used while completing this form.)</p>
+    </header>
+
+    <main id="WDCFormMain">
+      <!-- ===== Two-column: left general info / right pyramid ===== -->
+      <section class="content">
+        <!-- General Information -->
+        <div class="gi">
+          <div class="grid-form">
+            <div class="row">
+              <div class="label-box" data-i18n-key="label.projectTitle">PROJECT TITLE</div>
+              <input id="projectTitle" type="text" />
+            </div>
+            <div class="row">
+              <div class="label-box" data-i18n-key="label.jobDescription">JOB DESCRIPTION</div>
+              <input id="jobDescription" type="text" />
+            </div>
+            <div class="row">
+              <div class="label-box" data-i18n-key="label.jobLocation">JOB LOCATION</div>
+              <input id="jobLocation" type="text" />
+            </div>
+            <div class="row">
+              <div class="label-box" data-i18n-key="label.scheduledStartDate">SCHEDULED START DATE</div>
+              <input id="scheduledStartDate" type="text" />
+            </div>
+            <div class="row">
+              <div class="label-box" data-i18n-key="label.emergencyNumbers">EMERGENCY NUMBER(S)</div>
+              <input id="emergencyNumbers" type="text" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Hazard Reduction Pyramid -->
+        <div class="haz">
+          <div class="pyramid-wrap" aria-label="Hierarchy of Controls">
+            <div class="pyramid">
+              <div class="slice s1"><span data-i18n-key="pyr.elimination">ELIMINATION</span></div>
+              <div class="slice s2"><span data-i18n-key="pyr.substitution">SUBSTITUTION</span></div>
+              <div class="slice s3"><span data-i18n-key="pyr.engineering">ENGINEERING</span></div>
+              <div class="slice s4"><span data-i18n-key="pyr.administrative">ADMINISTRATIVE</span></div>
+              <div class="slice s5"><span data-i18n-key="pyr.ppe">PPE</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Job Hazard Analysis (table) ===== -->
+      <section>
+
+        <table class="jha-table" id="jhaTable">
+          <thead>
+            <tr>
+              <th id="jhaHeadSteps" scope="col" data-i18n-key="jha.col.steps">JOB STEPS</th>
+              <th id="jhaHeadHazards" scope="col" data-i18n-key="jha.col.hazards">HAZARDS</th>
+              <th id="jhaHeadControls" scope="col" data-i18n-key="jha.col.controls">CONTROL METHODS</th>
+            </tr>
+          </thead>
+          <tbody id="jhaRows"></tbody>
+        </table>
+      </section>
+
+      <!-- ===== Approvals (3-up on wide; two-line cards) ===== -->
+      <section class="approvals-grid" aria-labelledby="apprTitle">
+        <div class="approvals-cards">        
+          <div class="appr-card" id="apprPrepared">
+             <div class="appr-title">
+               <div class="appr-caption" data-i18n-key="label.preparedBy">PREPARED BY</div>
+               <div class="appr-row">
+                 <button id="preparedByBtn" class="primary" data-i18n-key="btn.sign">Sign</button>
+                 <div id="preparedByDisplay" class="sig-display hidden"></div>
+               </div>
+             </div>
+           </div>
+
+
+          <div class="appr-card" id="apprReviewed">
+             <div class="appr-title">
+               <div class="appr-caption" data-i18n-key="label.reviewedBy">REVIEWED BY</div>
+               <div class="appr-row">
+                 <button id="reviewedByBtn" class="primary hidden" data-i18n-key="btn.sign">Sign</button>
+                 <div id="reviewedByDisplay" class="sig-display hidden"></div>
+               </div>
+             </div>
+           </div>
+
+
+
+          <div class="appr-card" id="apprRevised">
+             <div class="appr-title">
+               <div class="appr-caption" data-i18n-key="label.revisedBy">REVISED BY</div>
+               <div class="appr-row">
+                 <button id="revisedByBtn" data-i18n-key="btn.edit" class="">Edit</button>
+                 <div id="revisedByDisplay" class="sig-display hidden"></div>
+               </div>
+             </div>
+           </div>
+           </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ===== Translator Panel (single, left, printable) ===== -->
+    <details id="translatorPanel">
+      <summary class="dc83-summary">DC-83</summary>
+
+      <div id="translatorBody"></div>
+
+      <div class="panel-toolbar">
+        <button id="applyTranslationsBtn" type="button" data-i18n-key="btn.apply">Apply</button>
+      </div>
+    </details>
+
+    <!-- Dialog strings (translatable) -->
+    <div id="i18n-strings" style="display:none;">
+      <span data-i18n-key="dlg.enterName">Enter name:</span>
+      <span data-i18n-key="dlg.signedOn">Signed on</span>
+      <span data-i18n-key="dlg.clearApprovalsConfirm">Are you sure you want to clear all approvals?</span>
+      <span data-i18n-key="dlg.confirmEdit">Are you sure you want to edit?</span>
+      <span data-i18n-key="dlg.clearFormConfirm">Are you sure you want to clear all form data?</span>
+      <span data-i18n-key="msg.copied">Copied!</span>
+      <span data-i18n-key="msg.copyFailed">Copy failed. You can manually copy the URL from the address bar.</span>
+      <span data-i18n-key="btn.shareTitle">Share Job Hazard Analysis</span>
+      <span data-i18n-key="btn.edit">Edit</span>
+      <span data-i18n-key="btn.saveEdits">Save Edits</span>
+    </div>
+    <!-- print-only footer -->
+  <div class="print-footer" style="display:none" aria-hidden="true">DC‑83</div>
+  </div>
+
+  <script>
+    // ==============================
+    // Config & State
+    // ==============================
+    const MAX_ROWS = 10;
+    const DEFAULT_VISIBLE_ROWS = 4;
+    let visibleRows = DEFAULT_VISIBLE_ROWS;
+    const AUTO_SAVE =  true;
+          // Small debounce helper
+          function debounce(fn, ms=500){
+            let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); };
+          }
+    const CLEAR_REVIEW_ON_REVISE = true;  // When someone starts an Edit, clear "Reviewed By" so re-review is required
+
+    let approvals = { prepared:null, reviewed:null, revised:null,  revisionActive:false };
+    let DEFAULT_TRANSLATIONS = {};
+
+    // ==============================
+    // UTF‑8 <-> Base64 JSON
+    // ==============================
+    function encodeJSON(obj){
+      const json = JSON.stringify(obj);
+      const bytes = new TextEncoder().encode(json);
+      let bin=''; for(let i=0;i<bytes.length;i++) bin+=String.fromCharCode(bytes[i]);
+      return btoa(bin);
+    }
+    function decodeJSON(b64){
+      const bin = atob(b64);
+      const bytes = new Uint8Array(bin.length);
+      for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+      const json = new TextDecoder().decode(bytes);
+      return JSON.parse(json);
+    }
+
+    // ==============================
+    // Translations (header + main)
+    // ==============================
+    function collectTranslatableNodes(){
+      const scopes = [document.getElementById('PageHeader'), document.getElementById('WDCFormMain')];
+      const list = [];
+      scopes.forEach(scope=>{
+        if(!scope) return;
+        scope.querySelectorAll('[data-i18n-key]').forEach(node=>{
+          list.push({
+            key:  node.getAttribute('data-i18n-key'),
+            prop: node.getAttribute('data-i18n-prop') || 'text',
+            node
+          });
+        });
+      });
+      return list;
+    }
+    function readNodeValue(node, prop){
+      switch(prop){
+        case 'html':       return node.innerHTML ?? ''
+        case 'text':        return node.textContent ?? '';
+        case 'placeholder': return node.placeholder ?? '';
+        case 'title':       return node.title ?? '';
+        case 'aria-label':  return node.getAttribute('aria-label') ?? '';
+        case 'value':       return node.value ?? '';
+        default:            return node.textContent ?? '';
+      }
+    }
+    function writeNodeValue(node, prop, value){
+      switch(prop){
+        case 'html':       node.innerHTML = value; break
+        case 'text':        node.textContent = value; break;
+        case 'placeholder': node.placeholder = value; break;
+        case 'title':       node.title = value; break;
+        case 'aria-label':  node.setAttribute('aria-label', value); break;
+        case 'value':       node.value = value; break;
+        default:            node.textContent = value; break;
+      }
+    }
+    function readTranslationsFromDOM(){
+      const map = {};
+      collectTranslatableNodes().forEach(({key,prop,node})=>{
+        map[key] = readNodeValue(node, prop);
+      });
+      document.querySelectorAll('#i18n-strings [data-i18n-key]').forEach(el=>{
+        map[el.getAttribute('data-i18n-key')] = el.textContent || '';
+      });
+      return map;
+    }
+
+    function applyTranslations(map={}){
+   collectTranslatableNodes().forEach(({key,prop,node})=>{
+     if(Object.prototype.hasOwnProperty.call(map, key)){
+       writeNodeValue(node, prop, map[key]);
+     }
+   });
+   document.querySelectorAll('#i18n-strings [data-i18n-key]').forEach(el=>{
+     const k = el.getAttribute('data-i18n-key');
+     if(Object.prototype.hasOwnProperty.call(map, k)){
+       el.textContent = map[k];
+     }
+   });
+   updateJHAMobileLabels();
+  renderApprovals();
+ }
+
+    function diffTranslations(current, baseline){
+      const out={};
+      for(const k in current){
+        if(!Object.prototype.hasOwnProperty.call(baseline, k) || current[k] !== baseline[k]){
+          out[k] = current[k];
+        }
+      }
+      return out;
+    }
+
+    // ==============================
+    // Inputs
+    // ==============================
+    function readInputs(){
+      const scope = document.getElementById('WDCFormMain');
+      const fields = scope.querySelectorAll('input[type="text"], input[type="email"], textarea, input[type="date"], input[type="time"], input[type="datetime-local"], input[type="checkbox"], input[type="radio"]');
+      const data = {};
+      fields.forEach(el=>{
+        if(el.type === 'radio'){
+          const key = el.name || el.id; if(!key) return;
+          if(el.checked) data[key] = el.value;
+          return;
+        }
+        if(!el.id) return;
+        if(el.type === 'checkbox') data[el.id] = el.checked;
+        else data[el.id] = el.value;
+      });
+      return data;
+    }
+    function applyInputs(map={}){
+      const scope = document.getElementById('WDCFormMain');
+      const fields = scope.querySelectorAll('input[type="text"], input[type="email"], textarea, input[type="date"], input[type="time"], input[type="datetime-local"], input[type="checkbox"], input[type="radio"]');
+      fields.forEach(el=>{
+        if(el.type === 'radio') return;
+        if(!el.id) return;
+        if(!Object.prototype.hasOwnProperty.call(map, el.id)) return;
+        if(el.type === 'checkbox') el.checked = !!map[el.id];
+        else el.value = map[el.id];
+      });
+      const groups = new Map();
+      fields.forEach(el=>{
+        if(el.type !== 'radio') return;
+        const key = el.name || el.id; if(!key) return;
+        if(!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(el);
+      });
+      groups.forEach((arr,key)=>{
+        const v = map[key]; if(v===undefined) return;
+        arr.forEach(r=> r.checked = (r.value === v));
+      });
+    }
+
+    // ==============================
+    // JHA rows (TABLE)
+    // ==============================
+    function buildJHARows(){
+      const tbody = document.getElementById('jhaRows');
+      tbody.innerHTML = '';
+
+      const h1 = document.getElementById('jhaHeadSteps').textContent.trim();
+      const h2 = document.getElementById('jhaHeadHazards').textContent.trim();
+      const h3 = document.getElementById('jhaHeadControls').textContent.trim();
+
+      for (let i = 1; i <= MAX_ROWS; i++){
+        const tr = document.createElement('tr');
+        tr.id = `jhaRow_${i}`;
+        tr.setAttribute('data-step', i);
+        if (i > DEFAULT_VISIBLE_ROWS) tr.classList.add('hidden');
+
+        const td1 = document.createElement('td');
+        td1.setAttribute('data-label', h1);
+        td1.setAttribute('data-index', i);
+        td1.innerHTML = `<textarea id="jha_step_${i}" aria-label="${h1} ${i}"></textarea>`;
+
+        const td2 = document.createElement('td');
+        td2.setAttribute('data-label', h2);
+        td2.setAttribute('data-index', i);
+        td2.innerHTML = `<textarea id="jha_hazard_${i}" aria-label="${h2} ${i}"></textarea>`;
+
+        const td3 = document.createElement('td');
+        td3.setAttribute('data-label', h3);
+        td3.setAttribute('data-index', i);
+        td3.innerHTML = `<textarea id="jha_control_${i}" aria-label="${h3} ${i}"></textarea>`;
+
+        tr.append(td1, td2, td3);
+        tbody.appendChild(tr);
+      }
+      visibleRows = DEFAULT_VISIBLE_ROWS;
+    }
+    function updateJHAMobileLabels(){
+      const h1 = document.getElementById('jhaHeadSteps').textContent.trim();
+      const h2 = document.getElementById('jhaHeadHazards').textContent.trim();
+      const h3 = document.getElementById('jhaHeadControls').textContent.trim();
+      document.querySelectorAll('#jhaRows tr').forEach(tr=>{
+        const idx = Number(tr.id.split('_')[1]) || 0;
+        const [td1, td2, td3] = tr.children;
+        if (td1){ td1.setAttribute('data-label', h1); td1.setAttribute('data-index', idx); }
+        if (td2){ td2.setAttribute('data-label', h2); td2.setAttribute('data-index', idx); }
+        if (td3){ td3.setAttribute('data-label', h3); td3.setAttribute('data-index', idx); }
+      });
+    }
+    function showNextRow(){
+      if (visibleRows >= MAX_ROWS) return;
+      visibleRows++;
+      document.getElementById(`jhaRow_${visibleRows}`)?.classList.remove('hidden');
+    }
+    function hideLastRow(){
+      if (visibleRows <= 1) return;
+      const tr = document.getElementById(`jhaRow_${visibleRows}`);
+      if (tr){
+        tr.querySelectorAll('textarea').forEach(t => t.value = '');
+        tr.classList.add('hidden');
+      }
+      visibleRows--;
+    }
+    function setVisibleRows(n){
+      for(let i=1;i<=MAX_ROWS;i++){
+        const tr = document.getElementById(`jhaRow_${i}`);
+        if (!tr) continue;
+        i <= n ? tr.classList.remove('hidden') : tr.classList.add('hidden');
+      }
+      visibleRows = Math.min(Math.max(1, n), MAX_ROWS);
+    }
+
+    // ==============================
+    // Approvals
+    // ==============================
+    function fmtTimestamp(ts){
+      // Compact, unambiguous (uses locale): "2/6/2026, 11:37:23 AM"
+      return new Date(ts).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'medium' });
+    }
+    function getStr(key, fallback){
+      const el = document.querySelector(`#i18n-strings [data-i18n-key="${key}"]`);
+      return (el?.textContent || fallback || '').trim();
+    }
+
+function setFormReadOnly(locked){
+  const scope = document.getElementById('WDCFormMain');
+  const fields = scope.querySelectorAll(
+    'input[type="text"], input[type="email"], textarea, input[type="date"], input[type="time"], input[type="datetime-local"], input[type="checkbox"], input[type="radio"]'
+  );
+
+  fields.forEach(el=>{
+    if (el.closest('.approvals-grid')) return;  // approvals controls remain interactive
+    const isTextual = (el.tagName === 'TEXTAREA' || ['text','email','date','time','datetime-local'].includes(el.type));
+    if (isTextual) el.readOnly = !!locked;
+    else el.disabled = !!locked;
+    if (locked) el.classList.add('locked'); else el.classList.remove('locked');
+  });
+}
+
+// Repaint buttons, labels & lock state based on 'approvals'
+function renderApprovals(){
+  const preparedBtn = document.getElementById('preparedByBtn');
+  const preparedDisp = document.getElementById('preparedByDisplay');
+  const reviewedBtn = document.getElementById('reviewedByBtn');
+  const reviewedDisp = document.getElementById('reviewedByDisplay');
+  const revisedBtn  = document.getElementById('revisedByBtn');
+  const revisedDisp = document.getElementById('revisedByDisplay');
+
+  // Prepared
+  if (approvals.prepared){
+    preparedDisp.textContent = `${approvals.prepared.name} (${fmtTimestamp(approvals.prepared.time)})`;
+    preparedBtn.classList.add('hidden');
+    preparedDisp.classList.remove('hidden');
+  } else {
+    preparedBtn.classList.remove('hidden');
+    preparedDisp.classList.add('hidden');
+  }
+
+  // Reviewed (only available after Prepared and not during an active revision)
+  const canReview = !!approvals.prepared && !approvals.revisionActive;
+  if (approvals.reviewed){
+    reviewedDisp.textContent = `${approvals.reviewed.name} (${fmtTimestamp(approvals.reviewed.time)})`;
+    reviewedBtn.classList.add('hidden');
+    reviewedDisp.classList.remove('hidden');
+  } else {
+    reviewedBtn.classList.toggle('hidden', !canReview);
+    reviewedDisp.classList.add('hidden');
+  }
+
+  // Revised visibility (Edit/Save Edits) — allowed once Prepared or Reviewed exists
+  const canEdit = !!approvals.prepared || !!approvals.reviewed;
+  revisedBtn.classList.toggle('hidden', !canEdit);
+
+  if (approvals.revised){
+    revisedDisp.textContent = `${approvals.revised.name} (${fmtTimestamp(approvals.revised.time)})`;
+    revisedDisp.classList.remove('hidden');
+  } else {
+    revisedDisp.classList.add('hidden');
+  }
+
+  // Toggle button label based on mode
+  revisedBtn.textContent = approvals.revisionActive
+    ? getStr('btn.saveEdits', 'Save Edits')
+    : getStr('btn.edit', 'Edit');
+
+
+  // Lock rule: lock if prepared or reviewed are present AND not actively editing
+  const locked = (approvals.prepared || approvals.reviewed) && !approvals.revisionActive;
+  setFormReadOnly(locked);
+}
+    function signPrepared(){
+  if (approvals.prepared){ alert('Already signed.'); return; }
+  const name = (window.prompt(getStr('dlg.enterName','Enter name:')) || '').trim();
+  if(!name) return;
+  approvals.prepared = { name, time: Date.now() };
+  approvals.revisionActive = false; // ensure we’re not in edit mode
+  renderApprovals();
+}
+
+function signReviewed(){
+  if (!approvals.prepared){ alert('Sign Prepared By first.'); return; }
+  if (approvals.reviewed){ alert('Already signed.'); return; }
+  if (approvals.revisionActive){ alert('Save edits before review.'); return; }
+  const name = (window.prompt(getStr('dlg.enterName','Enter name:')) || '').trim();
+  if(!name) return;
+  approvals.reviewed = { name, time: Date.now() };
+  renderApprovals();
+}
+
+function handleRevisedClick() {
+
+  // Guard: cannot revise until Prepared or Reviewed exists
+  if (!approvals.prepared && !approvals.reviewed) {
+    alert('Nothing to revise yet.');
+    return;
+  }
+
+  // ==============================
+  // ENTER EDIT MODE
+  // ==============================
+  if (!approvals.revisionActive) {
+
+    const proceed = confirm(getStr('dlg.confirmEdit', 'Are you sure you want to edit?'));
+    if (!proceed) return;
+
+    // Enter edit mode
+    approvals.revisionActive = true;
+
+    // Clear the previous Review (policy)
+    if (CLEAR_REVIEW_ON_REVISE) approvals.reviewed = null;
+    approvals.revised = null;
+
+    renderApprovals(); // unlocks fields, updates button text
+    return;
+  }
+
+  // ==============================
+  // SAVE EDITS — SIGN NOW
+  // ==============================
+  const name = (window.prompt(getStr('dlg.enterName','Enter name:')) || '').trim();
+  if (!name) return;
+
+  // Store signature + timestamp
+  approvals.revised = {
+    name,
+    time: Date.now()
+  };
+
+  // Exit edit mode
+  approvals.revisionActive = false;
+
+  renderApprovals();  // locks fields, updates displays
+}
+
+function clearApprovals(){
+  approvals = { prepared:null, reviewed:null, revised:null, revisionActive:false };
+  renderApprovals();
+}
+
+function applyApprovalsFromPayload(appr){
+  approvals = { prepared:null, reviewed:null, revised:null, revisionActive:false, ...(appr||{}) };
+  renderApprovals();
+}
+
+    // ==============================
+    // Hash Save & Load
+    // ==============================
+    function buildPayload(){
+      const curr = readTranslationsFromDOM();
+      const overrides = diffTranslations(curr, DEFAULT_TRANSLATIONS);
+      return { version:1, inputs:readInputs(), translations:overrides, approvals, jhaVisibleRows:visibleRows };
+    }
+    function updateHash(){ window.location.hash = encodeJSON(buildPayload()); }
+    function updateFromHash(){
+      const hash = window.location.hash.slice(1);
+      if(!hash) return;
+      try{
+        const payload = decodeJSON(hash);
+        if(payload.translations) applyTranslations(payload.translations);
+        if(payload.inputs)       applyInputs(payload.inputs);
+        if(payload.jhaVisibleRows) setVisibleRows(payload.jhaVisibleRows);
+        if(payload.approvals)    applyApprovalsFromPayload(payload.approvals);
+      }catch(e){ console.error('Invalid or corrupted hash data:', e); }
+    }
+
+    // ==============================
+    // Buttons & Translator
+    // ==============================
+    function wireButtons(){
+      // JHA rows on sticky bar
+      document.getElementById('addRowBtn')?.addEventListener('click', showNextRow);
+      document.getElementById('removeRowBtn')?.addEventListener('click', hideLastRow);
+
+      // Approvals
+      document.getElementById('preparedByBtn')?.addEventListener('click', signPrepared);
+      document.getElementById('reviewedByBtn')?.addEventListener('click', signReviewed);
+      document.getElementById('revisedByBtn')?.addEventListener('click', handleRevisedClick);
+
+      // Copy URL (top & panel)
+      function doCopy(btn){
+        updateHash();
+        (async()=>{
+          try{
+            await navigator.clipboard.writeText(location.href);
+            const old = btn.textContent; btn.textContent = getStr('msg.copied','Copied!');
+            setTimeout(()=> btn.textContent = old, 1200);
+          }catch{
+            alert(getStr('msg.copyFailed','Copy failed. You can manually copy the URL from the address bar.'));
+          }
+        })();
+      }
+      document.getElementById('copyUrlBtn')?.addEventListener('click', e=> doCopy(e.currentTarget));
+      
+      // Share URL
+      document.getElementById('shareUrlBtn')?.addEventListener('click', async ()=>{
+        updateHash();
+        if(navigator.share){
+          try{ await navigator.share({ title:getStr('btn.shareTitle','Share Job Hazard Analysis'), url: location.href }); }
+          catch(e){ /* ignore */ }
+        }else{
+          try{ await navigator.clipboard.writeText(location.href); alert(getStr('msg.copied','Copied!')); }
+          catch{ alert(getStr('msg.copyFailed','Copy failed. You can manually copy the URL from the address bar.')); }
+        }
+      });
+
+      // Edit form: clear approvals + unlock
+      document.getElementById('editFormBtn')?.addEventListener('click', ()=>{
+        if(confirm(getStr('dlg.clearApprovalsConfirm','Are you sure you want to clear all approvals?'))){
+          clearApprovals();
+          setFormReadOnly(false);
+        }
+      });
+
+      // Export PDF (print)
+      document.getElementById('exportPdfBtn')?.addEventListener('click', ()=>{
+        updateHash();
+        window.print();
+      });
+
+      // Reset inputs (keep translations)
+      document.getElementById('resetBtn')?.addEventListener('click', ()=>{
+        if(!confirm(getStr('dlg.clearFormConfirm','Are you sure you want to clear all form data?'))) return;
+        const scope = document.getElementById('WDCFormMain');
+        scope.querySelectorAll('input[type="text"], input[type="email"], textarea, input[type="date"], input[type="time"], input[type="datetime-local"]').forEach(el=> el.value='');
+        scope.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(el=> el.checked=false);
+        setVisibleRows(DEFAULT_VISIBLE_ROWS);        
+        //clear signatures and unlock
+        clearApprovals();
+        setFormReadOnly(false);
+      });
+
+      document.getElementById('resetApprovalsBtn')?.addEventListener('click', ()=>{
+        if(confirm(getStr('dlg.clearApprovalsConfirm','Are you sure you want to clear all approvals?'))){
+          clearApprovals();
+          setFormReadOnly(false);
+        }
+      });
+
+      // Translator panel buttons
+      document.getElementById('applyTranslationsBtn')?.addEventListener('click', ()=>{
+        const edited={};
+        document.querySelectorAll('#translatorBody [data-i18n-key]').forEach(el=>{
+          edited[el.dataset.i18nKey] = el.value;
+        });
+        applyTranslations(edited);
+      });
+    }
+
+    function buildTranslatorUI(){
+      const body = document.getElementById('translatorBody');
+      body.innerHTML = '';
+      const nodes = collectTranslatableNodes();
+
+      nodes.forEach(({key,prop,node})=>{
+        const current = readNodeValue(node, prop);
+        const keyEl = document.createElement('div');
+        keyEl.className = 'key';
+        keyEl.textContent = `${key} (${prop})`;
+        const control = (String(current).length > 60 || String(current).includes('\n'))
+          ? document.createElement('textarea')
+          : document.createElement('input');
+        control.value = current;
+        control.dataset.i18nKey = key;
+        control.dataset.i18nProp = prop;
+        control.addEventListener('input', ()=> writeNodeValue(node, prop, control.value));
+        body.appendChild(keyEl);
+        body.appendChild(control);
+      });
+
+      // dialog strings
+      document.querySelectorAll('#i18n-strings [data-i18n-key]').forEach(el=>{
+        const key = el.getAttribute('data-i18n-key');
+        const keyEl = document.createElement('div');
+        keyEl.className = 'key';
+        keyEl.textContent = `${key} (text)`;
+        const input = document.createElement('input');
+        input.value = el.textContent || '';
+        input.dataset.i18nKey = key;
+        input.addEventListener('input', ()=> { el.textContent = input.value; });
+        body.appendChild(keyEl);
+        body.appendChild(input);
+      });
+    }
+
+    // ==============================
+    // Init
+    // ==============================
+    document.addEventListener('DOMContentLoaded', ()=>{
+      buildJHARows();
+      DEFAULT_TRANSLATIONS = readTranslationsFromDOM();
+      updateFromHash();
+      renderApprovals(); // ensure UI reflects state on first paint
+      buildTranslatorUI();
+      wireButtons();
+
+      if (AUTO_SAVE) {
+        const scope = document.getElementById('WDCFormMain');
+        const debouncedSave = debounce(updateHash, 500);
+        scope.addEventListener('input', debouncedSave, true);
+      }
+
+      // Update mobile labels if headers change via translation
+      const obs = new MutationObserver(updateJHAMobileLabels);
+      ['jhaHeadSteps','jhaHeadHazards','jhaHeadControls'].forEach(id=>{
+        const el = document.getElementById(id);
+        if (el) obs.observe(el, { childList:true, characterData:true, subtree:true });
+      });
+    });
+  </script>
+</body>
+</html>
