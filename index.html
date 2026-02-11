@@ -754,7 +754,7 @@ details#translatorPanel summary.dc83-summary::-webkit-details-marker { display: 
 
     <!-- ===== Translator Panel (single, left, printable) ===== -->
     <details id="translatorPanel">
-      <summary class="dc83-summary">DC-83</summary>
+      <summary class="dc83-summary">DC-83 (V1.0)</summary>
 
       <div id="translatorBody"></div>
 
@@ -828,6 +828,7 @@ details#translatorPanel summary.dc83-summary::-webkit-details-marker { display: 
       scopes.forEach(scope=>{
         if(!scope) return;
         scope.querySelectorAll('[data-i18n-key]').forEach(node=>{
+          if (node.closest('#translatorBody')) return; // exclude editor controls
           list.push({
             key:  node.getAttribute('data-i18n-key'),
             prop: node.getAttribute('data-i18n-prop') || 'text',
@@ -870,31 +871,43 @@ details#translatorPanel summary.dc83-summary::-webkit-details-marker { display: 
       return map;
     }
 
-    function applyTranslations(map={}){
-   collectTranslatableNodes().forEach(({key,prop,node})=>{
-     if(Object.prototype.hasOwnProperty.call(map, key)){
-       writeNodeValue(node, prop, map[key]);
-     }
-   });
-   document.querySelectorAll('#i18n-strings [data-i18n-key]').forEach(el=>{
-     const k = el.getAttribute('data-i18n-key');
-     if(Object.prototype.hasOwnProperty.call(map, k)){
-       el.textContent = map[k];
-     }
-   });
-   updateJHAMobileLabels();
-  renderApprovals();
- }
+function applyTranslations(map = {}){
+  const baseline = DEFAULT_TRANSLATIONS || {};
 
-    function diffTranslations(current, baseline){
-      const out={};
-      for(const k in current){
-        if(!Object.prototype.hasOwnProperty.call(baseline, k) || current[k] !== baseline[k]){
-          out[k] = current[k];
-        }
-      }
-      return out;
+  collectTranslatableNodes().forEach(({key, prop, node})=>{
+    if (!Object.prototype.hasOwnProperty.call(map, key)) return;
+    const v = map[key];
+    const isEmpty = (v === '' || v === null || v === undefined);
+    const fallback = (baseline[key] !== undefined) ? baseline[key] : readNodeValue(node, prop);
+    writeNodeValue(node, prop, isEmpty ? fallback : v);
+  });
+
+  document.querySelectorAll('#i18n-strings [data-i18n-key]').forEach(el=>{
+    const k = el.getAttribute('data-i18n-key');
+    if (!Object.prototype.hasOwnProperty.call(map, k)) return;
+    const v = map[k];
+    const isEmpty = (v === '' || v === null || v === undefined);
+    const fallback = (baseline[k] !== undefined) ? baseline[k] : (el.textContent || '');
+    el.textContent = isEmpty ? fallback : v;
+  });
+
+  updateJHAMobileLabels();
+  renderApprovals();
+}
+
+
+function diffTranslations(current, baseline){
+  const out = {};
+  for (const k in current){
+    const cur = current[k];
+    const base = baseline[k];
+    if (cur === '' || cur === null || cur === undefined) continue; // skip empties
+    if (!Object.prototype.hasOwnProperty.call(baseline, k) || cur !== base){
+      out[k] = cur;
     }
+  }
+  return out;
+}
 
     // ==============================
     // Inputs
@@ -1323,6 +1336,12 @@ function applyApprovalsFromPayload(appr){
         const scope = document.getElementById('WDCFormMain');
         const debouncedSave = debounce(updateHash, 500);
         scope.addEventListener('input', debouncedSave, true);
+
+        
+      // autosave for panel edits too
+      const panel = document.getElementById('translatorBody');
+      if (panel) panel.addEventListener('input', debouncedSave, true);
+
       }
 
       // Update mobile labels if headers change via translation
