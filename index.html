@@ -818,7 +818,12 @@ details#translatorPanel summary.dc83-summary::-webkit-details-marker { display: 
     // Translations (header + main)
     // ==============================
     function collectTranslatableNodes(){
-      const scopes = [document.getElementById('PageHeader'), document.getElementById('WDCFormMain')];
+      const scopes = [
+        document.getElementById('PageHeader'),
+        document.getElementById('WDCFormMain'),
+        document.getElementById('translatorPanel'),
+        document.querySelector('.actions')
+      ];
       const list = [];
       scopes.forEach(scope=>{
         if(!scope) return;
@@ -1100,6 +1105,7 @@ function signReviewed(){
   if(!name) return;
   approvals.reviewed = { name, time: Date.now() };
   renderApprovals();
+  updateHash();
 }
 
 function handleRevisedClick() {
@@ -1126,6 +1132,7 @@ function handleRevisedClick() {
     approvals.revised = null;
 
     renderApprovals(); // unlocks fields, updates button text
+    updateHash();
     return;
   }
 
@@ -1145,11 +1152,13 @@ function handleRevisedClick() {
   approvals.revisionActive = false;
 
   renderApprovals();  // locks fields, updates displays
+  updateHash();
 }
 
 function clearApprovals(){
   approvals = { prepared:null, reviewed:null, revised:null, revisionActive:false };
   renderApprovals();
+  updateHash();
 }
 
 function applyApprovalsFromPayload(appr){
@@ -1229,6 +1238,10 @@ function applyApprovalsFromPayload(appr){
       // Export PDF (print)
       document.getElementById('exportPdfBtn')?.addEventListener('click', ()=>{
         updateHash();
+        // Close the translator panel before printing
+        const translatorPanel = document.getElementById('translatorPanel');
+        if (translatorPanel) translatorPanel.open = false;
+        alert('The document is set to print in landscape orientation. In the print dialog, make sure "Landscape" is selected if needed.');
         window.print();
       });
 
@@ -1253,11 +1266,9 @@ function applyApprovalsFromPayload(appr){
 
       // Translator panel buttons
       document.getElementById('applyTranslationsBtn')?.addEventListener('click', ()=>{
-        const edited={};
-        document.querySelectorAll('#translatorBody [data-i18n-key]').forEach(el=>{
-          edited[el.dataset.i18nKey] = el.value;
-        });
-        applyTranslations(edited);
+        // Translations are already applied in real-time via input event listeners in buildTranslatorUI
+        // Just update the hash to save the changes
+        updateHash();
       });
     }
 
