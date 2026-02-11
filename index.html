@@ -754,7 +754,7 @@ details#translatorPanel summary.dc83-summary::-webkit-details-marker { display: 
 
     <!-- ===== Translator Panel (single, left, printable) ===== -->
     <details id="translatorPanel">
-      <summary class="dc83-summary">DC-83 (V1.0)</summary>
+      <summary class="dc83-summary">DC-83</summary>
 
       <div id="translatorBody"></div>
 
@@ -1343,6 +1343,12 @@ function applyApprovalsFromPayload(appr){
       if (panel) panel.addEventListener('input', debouncedSave, true);
 
       }
+
+    // auto-import when the hash changes (user pastes a new URL and presses Enter,
+    // or navigates back/forward to a different hash)
+    window.addEventListener('hashchange', () => {
+      updateFromHash();
+    });
 
       // Update mobile labels if headers change via translation
       const obs = new MutationObserver(updateJHAMobileLabels);
