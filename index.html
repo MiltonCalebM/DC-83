@@ -754,7 +754,7 @@ details#translatorPanel summary.dc83-summary::-webkit-details-marker { display: 
 
     <!-- ===== Translator Panel (single, left, printable) ===== -->
     <details id="translatorPanel">
-      <summary class="dc83-summary">DC-83</summary>
+      <summary class="dc83-summary">DC-83 V1.1</summary>
 
       <div id="translatorBody"></div>
 
@@ -1200,6 +1200,45 @@ function applyApprovalsFromPayload(appr){
       }catch(e){ console.error('Invalid or corrupted hash data:', e); }
     }
 
+
+/**
+ * Shorten a URL via is.gd simple API.
+ * Returns the short URL string or throws on network/HTTP error.
+ */
+async function shortenWithIsGd(longUrl) {
+  const api = 'https://is.gd/create.php?format=simple&url=' + encodeURIComponent(longUrl);
+  const res = await fetch(api, { method: 'GET' });
+  if (!res.ok) {
+    throw new Error('is.gd API error ' + res.status);
+  }
+  const text = (await res.text()).trim();
+  // Basic sanity: is.gd returns something like https://is.gd/XXXXXX
+  if (!/^https?:\/\/(is\.gd|v\.gd)\//i.test(text)) {
+    // is.gd sometimes returns a readable “Error:” message in plain text
+    throw new Error('is.gd response: ' + text);
+  }
+  return text;
+}
+
+
+/**
+ * Ensures the current state is in the URL hash,
+ * then returns a shortened URL (is.gd) if available;
+ * otherwise returns the original long URL.
+ */
+async function getShareUrl() {
+  updateHash();                       // make sure the latest state is in the URL
+  const longUrl = location.href;
+  try {
+    const shortUrl = await shortenWithIsGd(longUrl);
+    return shortUrl;
+  } catch (e) {
+    console.warn('Shortening failed, using long URL. Reason:', e.message || e);
+    return longUrl;
+  }
+}
+
+
     // ==============================
     // Buttons & Translator
     // ==============================
@@ -1213,32 +1252,38 @@ function applyApprovalsFromPayload(appr){
       document.getElementById('reviewedByBtn')?.addEventListener('click', signReviewed);
       document.getElementById('revisedByBtn')?.addEventListener('click', handleRevisedClick);
 
+
       // Copy URL (top & panel)
-      function doCopy(btn){
-        updateHash();
-        (async()=>{
+        async function doCopy(btn){
+          const url = await getShareUrl();
           try{
-            await navigator.clipboard.writeText(location.href);
-            const old = btn.textContent; btn.textContent = getStr('msg.copied','Copied!');
+            await navigator.clipboard.writeText(url);
+            const old = btn.textContent;
+            btn.textContent = getStr('msg.copied','Copied!');
             setTimeout(()=> btn.textContent = old, 1200);
           }catch{
             alert(getStr('msg.copyFailed','Copy failed. You can manually copy the URL from the address bar.'));
           }
-        })();
-      }
-      document.getElementById('copyUrlBtn')?.addEventListener('click', e=> doCopy(e.currentTarget));
-      
-      // Share URL
-      document.getElementById('shareUrlBtn')?.addEventListener('click', async ()=>{
-        updateHash();
-        if(navigator.share){
-          try{ await navigator.share({ title:getStr('btn.shareTitle','Share Job Hazard Analysis'), url: location.href }); }
-          catch(e){ /* ignore */ }
-        }else{
-          try{ await navigator.clipboard.writeText(location.href); alert(getStr('msg.copied','Copied!')); }
-          catch{ alert(getStr('msg.copyFailed','Copy failed. You can manually copy the URL from the address bar.')); }
         }
-      });
+        document.getElementById('copyUrlBtn')?.addEventListener('click', e => doCopy(e.currentTarget));
+
+        // Share URL
+        document.getElementById('shareUrlBtn')?.addEventListener('click', async () => {
+          const url = await getShareUrl();
+          if (navigator.share) {
+            try { 
+              await navigator.share({ title:getStr('btn.shareTitle','Share Job Hazard Analysis'), url });
+            } catch(e) { /* user canceled or share not possible */ }
+          } else {
+            try { 
+              await navigator.clipboard.writeText(url); 
+              alert(getStr('msg.copied','Copied!')); 
+            } catch { 
+              alert(getStr('msg.copyFailed','Copy failed. You can manually copy the URL from the address bar.')); 
+            }
+          }
+        });
+
 
       // Edit form: clear approvals + unlock
       document.getElementById('editFormBtn')?.addEventListener('click', ()=>{
