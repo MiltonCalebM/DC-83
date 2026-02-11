@@ -754,7 +754,7 @@ details#translatorPanel summary.dc83-summary::-webkit-details-marker { display: 
 
     <!-- ===== Translator Panel (single, left, printable) ===== -->
     <details id="translatorPanel">
-      <summary class="dc83-summary">DC-83 V1.1</summary>
+      <summary class="dc83-summary">DC-83 V2.0</summary>
 
       <div id="translatorBody"></div>
 
@@ -1205,33 +1205,55 @@ function applyApprovalsFromPayload(appr){
  * Shorten a URL via is.gd simple API.
  * Returns the short URL string or throws on network/HTTP error.
  */
-async function shortenWithIsGd(longUrl) {
-  const api = 'https://is.gd/create.php?format=simple&url=' + encodeURIComponent(longUrl);
-  const res = await fetch(api, { method: 'GET' });
-  if (!res.ok) {
-    throw new Error('is.gd API error ' + res.status);
-  }
-  const text = (await res.text()).trim();
-  // Basic sanity: is.gd returns something like https://is.gd/XXXXXX
-  if (!/^https?:\/\/(is\.gd|v\.gd)\//i.test(text)) {
-    // is.gd sometimes returns a readable “Error:” message in plain text
-    throw new Error('is.gd response: ' + text);
-  }
-  return text;
+// --- JSONP helper (bypasses CORS by loading a <script>) ---
+function jsonp(url, callbackParam = 'callback') {
+  return new Promise((resolve, reject) => {
+    const cbName = 'cb_' + Math.random().toString(36).slice(2);
+    const sep = url.includes('?') ? '&' : '?';
+    const script = document.createElement('script');
+    script.src = `${url}${sep}${encodeURIComponent(callbackParam)}=${cbName}`;
+    script.async = true;
+
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('JSONP timeout'));
+    }, 10000);
+
+    function cleanup() {
+      clearTimeout(timeout);
+      script.remove();
+      try { delete window[cbName]; } catch (_) { window[cbName] = undefined; }
+    }
+
+    window[cbName] = (data) => {
+      cleanup();
+      resolve(data);
+    };
+
+    script.onerror = () => {
+      cleanup();
+      reject(new Error('JSONP script error'));
+    };
+
+    document.head.appendChild(script);
+  });
 }
 
+// --- is.gd shortener via JSONP (no CORS needed) ---
+async function shortenWithIsGd(longUrl) {
+  const api = 'https://is.gd/create.php?format=json&url=' + encodeURIComponent(longUrl);
+  const data = await jsonp(api, 'callback'); // is.gd supports ?callback=
+  if (data && data.shorturl) return data.shorturl;
+  if (data && data.errormessage) throw new Error(data.errormessage);
+  throw new Error('Unexpected is.gd response: ' + JSON.stringify(data));
+}
 
-/**
- * Ensures the current state is in the URL hash,
- * then returns a shortened URL (is.gd) if available;
- * otherwise returns the original long URL.
- */
+// --- Keep your original callsite signature ---
 async function getShareUrl() {
-  updateHash();                       // make sure the latest state is in the URL
+  updateHash(); // ensure latest state in #hash
   const longUrl = location.href;
   try {
-    const shortUrl = await shortenWithIsGd(longUrl);
-    return shortUrl;
+    return await shortenWithIsGd(longUrl);
   } catch (e) {
     console.warn('Shortening failed, using long URL. Reason:', e.message || e);
     return longUrl;
